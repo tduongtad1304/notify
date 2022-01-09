@@ -9,6 +9,10 @@ void main() {
   runApp(const MyApp());
 }
 
+Future _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message: ${message.messageId}");
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -48,6 +52,7 @@ class PushNotification {
 class _HomePageState extends State {
   late int _totalNotifications;
   late final FirebaseMessaging _messaging;
+  PushNotification? _notificationInfo;
 
   void registerNotification() async {
     print('BEGIN');
@@ -65,6 +70,7 @@ class _HomePageState extends State {
 
     // 2. Instantiate Firebase Messaging
     _messaging = FirebaseMessaging.instance;
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     // 3. On iOS, this helps to take the user permissions
     NotificationSettings settings = await _messaging.requestPermission(
@@ -73,12 +79,94 @@ class _HomePageState extends State {
       provisional: false,
       sound: true,
     );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+
+      // ignore: todo
+      // TODO: handle the received notifications
+      // For handling the received notifications
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        print(
+            'Message title: ${message.notification?.title}, body: ${message.notification?.body}, data: ${message.data}');
+        // Parse the message received
+        PushNotification notification = PushNotification(
+          title: message.notification?.title,
+          body: message.notification?.body,
+          dataTitle: message.data['title'],
+          dataBody: message.data['body'],
+        );
+        setState(() {
+          _notificationInfo = notification;
+          _totalNotifications++;
+        });
+
+        // For displaying the notification as an overlay
+        if (_notificationInfo != null) {
+          showSimpleNotification(
+            Text(_notificationInfo!.title!,
+                style: TextStyle(color: Colors.black87)),
+            autoDismiss: true,
+            slideDismissDirection: DismissDirection.horizontal,
+            leading: NotificationBadge(totalNotifications: _totalNotifications),
+            trailing:
+                Icon(Icons.navigate_next, size: 50, color: Colors.black54),
+            elevation: 10,
+            subtitle: Text(_notificationInfo!.body!,
+                style: TextStyle(color: Colors.black87)),
+            background: Colors.lightBlue.shade50.withOpacity(0.7),
+            foreground: Colors.teal.shade100.withOpacity(0.7),
+            duration: Duration(seconds: 10),
+            contentPadding: EdgeInsets.all(10),
+          );
+        }
+      });
+    } else {
+      print('User declined or has not accepted permission');
+    }
+  }
+
+  // For handling notification when the app is in terminated state
+  checkForInitialMessage() async {
+    await Firebase.initializeApp();
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    if (initialMessage != null) {
+      PushNotification notification = PushNotification(
+        title: initialMessage.notification?.title,
+        body: initialMessage.notification?.body,
+        dataTitle: initialMessage.data['title'],
+        dataBody: initialMessage.data['body'],
+      );
+      setState(() {
+        _notificationInfo = notification;
+        _totalNotifications++;
+      });
+    }
   }
 
   @override
   void initState() {
     _totalNotifications = 0;
     registerNotification();
+    checkForInitialMessage();
+    // For handling notification when the app is in background
+    // but not terminated
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      PushNotification notification = PushNotification(
+        title: message.notification?.title,
+        body: message.notification?.body,
+        dataTitle: message.data['title'],
+        dataBody: message.data['body'],
+      );
+
+      setState(() {
+        _notificationInfo = notification;
+        _totalNotifications++;
+      });
+    });
+
     super.initState();
   }
 
@@ -120,7 +208,72 @@ class _HomePageState extends State {
             ),
           ),
           SizedBox(height: 16.0),
+          NotificationBadge(totalNotifications: _totalNotifications),
+          SizedBox(height: 16.0),
+          _notificationInfo != null
+              ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tiêu đề: ${_notificationInfo!.dataTitle ?? _notificationInfo!.title}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16.0,
+                        ),
+                      ),
+                      SizedBox(height: 8.0),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        'Nội dung: ${_notificationInfo!.dataBody ?? _notificationInfo!.body}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16.0,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 16.0,
+                      ),
+                    ],
+                  ),
+                )
+              : Container(),
         ],
+      ),
+    );
+  }
+}
+
+class NotificationBadge extends StatelessWidget {
+  final int totalNotifications;
+
+  const NotificationBadge({Key? key, required this.totalNotifications})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40.0,
+      height: 40.0,
+      // ignore: unnecessary_new
+      decoration: new BoxDecoration(
+        color: Colors.lightBlue.shade300,
+        shape: BoxShape.circle,
+        boxShadow: const [
+          BoxShadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 2.0),
+          BoxShadow(
+              color: Colors.white, offset: Offset(1, -1), blurRadius: 5.0),
+        ],
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            '$totalNotifications',
+            style: const TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        ),
       ),
     );
   }
