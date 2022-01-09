@@ -7,7 +7,7 @@ Check more information: https://firebase.google.com/docs/cloud-messaging
 ## Getting Started
 
 Clone the repository by : \
-`git clone https://github.com/tduongtad1304/basic-flutter-layout.git`
+`git clone https://github.com/tduongtad1304/notify.git`
 
 Then open the projects on any IDE and run: \
 `flutter pub get` \
