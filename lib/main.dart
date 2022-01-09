@@ -146,6 +146,19 @@ class _HomePageState extends State {
     }
   }
 
+  //Handling notifications on the screen, set to delete all notifications.
+  deleteAllNotification() {
+    setState(() {
+      _notificationInfo = null;
+      _totalNotifications = 0;
+    });
+    if (_totalNotifications == 0) {
+      print('No notifications for deleting');
+    } else {
+      print('Deleted all notifications');
+    }
+  }
+
   @override
   void initState() {
     _totalNotifications = 0;
@@ -239,6 +252,16 @@ class _HomePageState extends State {
                   ),
                 )
               : Container(),
+          SizedBox(
+            child: ElevatedButton(
+                style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.red)),
+                onPressed: () => setState(() {
+                      deleteAllNotification();
+                    }),
+                child: Text('Delete All')),
+          ),
         ],
       ),
     );
