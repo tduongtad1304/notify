@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'components/NotificationBadge.dart';
+import 'components/PushNotification.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,20 +35,6 @@ class HomePage extends StatefulWidget {
 
   @override
   _HomePageState createState() => _HomePageState();
-}
-
-class PushNotification {
-  PushNotification({
-    this.title,
-    this.body,
-    this.dataTitle,
-    this.dataBody,
-  });
-
-  String? title;
-  String? body;
-  String? dataTitle;
-  String? dataBody;
 }
 
 class _HomePageState extends State {
@@ -263,40 +251,6 @@ class _HomePageState extends State {
                 child: Text('Delete All')),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class NotificationBadge extends StatelessWidget {
-  final int totalNotifications;
-
-  const NotificationBadge({Key? key, required this.totalNotifications})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 40.0,
-      height: 40.0,
-      // ignore: unnecessary_new
-      decoration: new BoxDecoration(
-        color: Colors.lightBlue.shade300,
-        shape: BoxShape.circle,
-        boxShadow: const [
-          BoxShadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 2.0),
-          BoxShadow(
-              color: Colors.white, offset: Offset(1, -1), blurRadius: 5.0),
-        ],
-      ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            '$totalNotifications',
-            style: const TextStyle(color: Colors.white, fontSize: 20),
-          ),
-        ),
       ),
     );
   }
