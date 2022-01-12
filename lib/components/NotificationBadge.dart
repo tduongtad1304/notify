@@ -1,19 +1,36 @@
+// ignore_for_file: prefer_typing_uninitialized_variables, must_be_immutable, prefer_initializing_formals
+
 import 'package:flutter/material.dart';
 
 class NotificationBadge extends StatelessWidget {
   final int totalNotifications;
+  double? width;
+  double? height;
+  double? fontSize;
+  Color? color;
 
-  const NotificationBadge({Key? key, required this.totalNotifications})
-      : super(key: key);
+  NotificationBadge(
+      {Key? key,
+      required this.totalNotifications,
+      double? width,
+      double? height,
+      double? fontSize,
+      Color? color})
+      : super(key: key) {
+    this.width = width;
+    this.height = height;
+    this.fontSize = fontSize;
+    this.color = color;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 40.0,
-      height: 40.0,
+      width: width,
+      height: height,
       // ignore: unnecessary_new
       decoration: new BoxDecoration(
-        color: Colors.lightBlue.shade300,
+        color: color,
         shape: BoxShape.circle,
         boxShadow: const [
           BoxShadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 2.0),
@@ -24,9 +41,11 @@ class NotificationBadge extends StatelessWidget {
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(
-            '$totalNotifications',
-            style: const TextStyle(color: Colors.white, fontSize: 20),
+          child: Center(
+            child: Text(
+              '$totalNotifications',
+              style: TextStyle(color: Colors.white, fontSize: fontSize),
+            ),
           ),
         ),
       ),

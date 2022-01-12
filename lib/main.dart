@@ -41,6 +41,7 @@ class _HomePageState extends State {
   late int _totalNotifications;
   late final FirebaseMessaging _messaging;
   PushNotification? _notificationInfo;
+  List listNotification = [];
 
   void registerNotification() async {
     print('BEGIN');
@@ -87,6 +88,7 @@ class _HomePageState extends State {
         setState(() {
           _notificationInfo = notification;
           _totalNotifications++;
+          listNotification.add(_notificationInfo);
         });
 
         // For displaying the notification as an overlay
@@ -96,7 +98,13 @@ class _HomePageState extends State {
                 style: TextStyle(color: Colors.black87)),
             autoDismiss: true,
             slideDismissDirection: DismissDirection.horizontal,
-            leading: NotificationBadge(totalNotifications: _totalNotifications),
+            leading: NotificationBadge(
+              totalNotifications: _totalNotifications,
+              width: 40.0,
+              height: 40.0,
+              fontSize: 20.0,
+              color: Colors.lightBlue.shade300,
+            ),
             trailing:
                 Icon(Icons.navigate_next, size: 50, color: Colors.black54),
             elevation: 10,
@@ -104,7 +112,7 @@ class _HomePageState extends State {
                 style: TextStyle(color: Colors.black87)),
             background: Colors.lightBlue.shade50.withOpacity(0.7),
             foreground: Colors.teal.shade100.withOpacity(0.7),
-            duration: Duration(seconds: 10),
+            duration: Duration(seconds: 5),
             contentPadding: EdgeInsets.all(10),
           );
         }
@@ -130,6 +138,7 @@ class _HomePageState extends State {
       setState(() {
         _notificationInfo = notification;
         _totalNotifications++;
+        listNotification.add(_notificationInfo);
       });
     }
   }
@@ -139,17 +148,18 @@ class _HomePageState extends State {
     setState(() {
       _notificationInfo = null;
       _totalNotifications = 0;
+      listNotification.removeRange(0, listNotification.length);
     });
+    print('Deleted all notifications');
     if (_totalNotifications == 0) {
       print('No notifications for deleting');
-    } else {
-      print('Deleted all notifications');
     }
   }
 
   @override
   void initState() {
     _totalNotifications = 0;
+    listNotification = [];
     registerNotification();
     checkForInitialMessage();
     // For handling notification when the app is in background
@@ -165,6 +175,7 @@ class _HomePageState extends State {
       setState(() {
         _notificationInfo = notification;
         _totalNotifications++;
+        listNotification.add(_notificationInfo);
       });
     });
 
@@ -186,13 +197,32 @@ class _HomePageState extends State {
           'Thông Báo',
         ),
         elevation: 0,
-        leading: Icon(
-          Icons.notifications,
-          color: Colors.black45,
+        leading: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Stack(
+            children: [
+              Icon(
+                Icons.notifications,
+                color: Colors.black45,
+                size: 40,
+              ),
+              Positioned(
+                left: 15,
+                child: NotificationBadge(
+                  totalNotifications: _totalNotifications,
+                  width: 23,
+                  height: 23,
+                  fontSize: 8,
+                  color: Colors.amber.shade800,
+                ),
+              )
+            ],
+          ),
         ),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
             height: 16.0,
@@ -209,37 +239,96 @@ class _HomePageState extends State {
             ),
           ),
           SizedBox(height: 16.0),
-          NotificationBadge(totalNotifications: _totalNotifications),
+          NotificationBadge(
+            totalNotifications: _totalNotifications,
+            width: 40.0,
+            height: 40.0,
+            fontSize: 20.0,
+            color: Colors.lightBlue.shade300,
+          ),
           SizedBox(height: 16.0),
           _notificationInfo != null
-              ? Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Tiêu đề: ${_notificationInfo!.dataTitle ?? _notificationInfo!.title}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.0,
+              ? Expanded(
+                  child: ListView.builder(
+                    itemCount: _totalNotifications,
+                    itemBuilder: (context, index) => Dismissible(
+                      key: UniqueKey(),
+                      direction: DismissDirection.horizontal,
+                      onDismissed: (direction) {
+                        if (direction == DismissDirection.endToStart) {
+                          setState(() {
+                            listNotification.removeAt(index);
+                            _totalNotifications--;
+                            if (_totalNotifications == 0) {
+                              _notificationInfo = null;
+                            }
+                          });
+                          print('The notification has been deleted');
+                        }
+                        if (direction == DismissDirection.startToEnd) {
+                          print('The notification has been archived');
+                        }
+                      },
+                      background: Container(
+                        alignment: Alignment.centerLeft,
+                        padding: EdgeInsets.only(left: 10.0),
+                        color: Colors.blue,
+                        child: Icon(Icons.archive, color: Colors.white),
+                      ),
+                      secondaryBackground: Container(
+                        alignment: Alignment.centerRight,
+                        padding: EdgeInsets.only(left: 10.0),
+                        color: Colors.redAccent,
+                        child: Icon(Icons.delete, color: Colors.white),
+                      ),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            width: 300,
+                            decoration: BoxDecoration(
+                                color: Colors.teal.shade50,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: const [
+                                  BoxShadow(
+                                      color: Colors.black54,
+                                      offset: Offset(2, 2),
+                                      blurRadius: 2.5,
+                                      blurStyle: BlurStyle.normal),
+                                ]),
+                            child: Column(
+                              children: [
+                                Text(
+                                  '${listNotification[index]!.title ?? {
+                                        listNotification[index]!.dataTitle
+                                      }}',
+                                  textAlign: TextAlign.justify,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16.0,
+                                  ),
+                                ),
+                                const SizedBox(height: 8.0),
+                                Text(
+                                  '${listNotification[index]!.body ?? {
+                                        listNotification[index]!.dataBody
+                                      }}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 16.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                      SizedBox(height: 8.0),
-                      const SizedBox(height: 8.0),
-                      Text(
-                        'Nội dung: ${_notificationInfo!.dataBody ?? _notificationInfo!.body}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.0,
-                        ),
-                      ),
-                      SizedBox(
-                        height: 16.0,
-                      ),
-                    ],
+                    ),
                   ),
                 )
-              : Container(),
+              : Text('No notifications'),
           SizedBox(
             child: ElevatedButton(
                 style: ButtonStyle(
