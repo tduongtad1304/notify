@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print, prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
