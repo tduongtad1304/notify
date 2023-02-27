@@ -259,7 +259,8 @@ class _HomePageState extends State<HomePage> {
                         child: _listNotification.isNotEmpty
                             ? NotificationCell(
                                 isHasImage:
-                                    _listNotification[index]?.imgUrl != null,
+                                    _listNotification[index]?.imgUrl != null &&
+                                        _listNotification[index]?.imgUrl != '',
                                 onTap: () {
                                   Navigator.of(context).push(
                                     pageBuilderTransition(

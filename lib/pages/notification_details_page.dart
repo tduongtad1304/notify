@@ -27,44 +27,53 @@ class NotificationDetailsPage extends StatelessWidget {
           icon: Icon(Icons.arrow_back_ios),
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              title ?? 'N/A',
-              style: Theme.of(context).textTheme.headlineMedium,
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title ?? 'N/A',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 20),
+                imgUrl != null && imgUrl != ''
+                    ? Image.network(
+                        imgUrl!,
+                        loadingBuilder: (context, child, progress) {
+                          return progress == null
+                              ? child
+                              : CircularProgressIndicator(
+                                  value: progress.expectedTotalBytes != null
+                                      ? progress.cumulativeBytesLoaded /
+                                          progress.expectedTotalBytes!
+                                      : null,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.blueAccent),
+                                );
+                        },
+                        errorBuilder: (context, error, stackTrace) => Text(
+                            'Fetch image error or Image not found!',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(fontSize: 15)),
+                      )
+                    : SizedBox.shrink(),
+                SizedBox(height: imgUrl != null && imgUrl != '' ? 20 : 0),
+                Text(
+                  subTitle ?? 'N/A',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            SizedBox(height: 20),
-            imgUrl != null
-                ? Image.network(
-                    imgUrl!,
-                    loadingBuilder: (context, child, progress) {
-                      return progress == null
-                          ? child
-                          : CircularProgressIndicator(
-                              value: progress.expectedTotalBytes != null
-                                  ? progress.cumulativeBytesLoaded /
-                                      progress.expectedTotalBytes!
-                                  : null,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.blueAccent),
-                            );
-                    },
-                    errorBuilder: (context, error, stackTrace) =>
-                        Text('Fetch image error'),
-                  )
-                : SizedBox.shrink(),
-            SizedBox(height: imgUrl != null ? 20 : 0),
-            Text(
-              subTitle ?? 'N/A',
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+          ),
         ),
       ),
     );
